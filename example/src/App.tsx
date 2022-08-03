@@ -22,6 +22,8 @@ import {
   Severance,
 } from "./Examples";
 import { HomeScreen } from "./Home";
+import Card3D from "./Examples/3DCard";
+import Card3DGlare from "./Examples/3DCardGlare";
 
 const linking = {
   config: {
@@ -43,6 +45,7 @@ const linking = {
       Graphs: "graphs",
       Animation: "animation",
       Performance: "performance",
+      Card3D: "card3d",
     },
   },
   prefixes: ["rnskia://"],
@@ -71,6 +74,8 @@ const App = () => {
               header: () => null,
             }}
           />
+          <Stack.Screen name="Card3D" component={Card3D} />
+          <Stack.Screen name="Card3DGlare" component={Card3DGlare} />
           <Stack.Screen name="API" component={API} />
           <Stack.Screen name="Breathe" component={Breathe} />
           <Stack.Screen name="Filters" component={Filters} />

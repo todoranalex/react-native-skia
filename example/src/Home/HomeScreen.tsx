@@ -7,6 +7,12 @@ export const HomeScreen = () => {
   return (
     <ScrollView>
       <HomeScreenButton title="API" description="API examples" route="API" />
+      <HomeScreenButton title="CardEffects" description="3D" route="Card3D" />
+      <HomeScreenButton
+        title="CardEffects"
+        description="Glare"
+        route="Card3DGlare"
+      />
       <HomeScreenButton
         title="🧘 Breathe"
         description="Simple declarative example"

@@ -1,6 +1,8 @@
 {
   "extends": "eslint-config-react-native-wcandillon/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react",
+    "tsx": "react",
     "noUncheckedIndexedAccess": false,
   }
 }
