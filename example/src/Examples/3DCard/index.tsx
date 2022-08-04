@@ -8,10 +8,12 @@ import {
   vec,
 } from "@shopify/react-native-skia";
 import React, { useEffect } from "react";
-import { Dimensions, View } from "react-native";
-import Animated, {
+import { View } from "react-native";
+import {
   Extrapolate,
   interpolate,
+  SensorType,
+  useAnimatedSensor,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -19,14 +21,14 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { Card3DGlareView } from "../3DCardGlare";
 
 type BackgroundGradientProps = {
   width: number;
   height: number;
 };
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const HEIGHT = 256;
-const WIDTH = SCREEN_WIDTH * 0.9;
+const HEIGHT = 180;
+const WIDTH = 278;
 
 const CARD_HEIGHT = HEIGHT - 5;
 const CARD_WIDTH = WIDTH - 5;
@@ -49,6 +51,7 @@ const BackgroundGradient: React.FC<BackgroundGradientProps> = React.memo(
     return (
       <Canvas
         style={{
+          alignSelf: "center",
           width: width + canvasPadding,
           height: height + canvasPadding,
         }}
@@ -108,12 +111,55 @@ const Card3D = () => {
       rotateY.value = withTiming(0);
     });
 
-  const rStyle = useAnimatedStyle(() => {
+  const animatedSensor = useAnimatedSensor(SensorType.ROTATION, {
+    interval: 100,
+  });
+
+  const gyroscopeSensor = useAnimatedSensor(SensorType.GYROSCOPE, {
+    interval: 100,
+  });
+
+  const gyroscope = useAnimatedStyle(() => {
+    const { x, y, z } = gyroscopeSensor.sensor.value;
+    return {
+      transform: [
+        {
+          translateY: y,
+        },
+        {
+          translateX: x,
+        },
+      ],
+    };
+  });
+
+  const rotate = useAnimatedStyle(() => {
     const rotateXvalue = `${rotateX.value}deg`;
     const rotateYvalue = `${rotateY.value}deg`;
+    const { pitch, yaw } = animatedSensor.sensor.value;
+
+    let yawValue =
+      30 * (yaw < 0 ? 2.5 * Number(yaw.toFixed(2)) : Number(yaw.toFixed(2)));
+    let pitchValue = 36 * pitch.toFixed(2);
 
     return {
       transform: [
+        {
+          translateY: interpolate(
+            yawValue,
+            [-45, 45],
+            [-5, 5],
+            Extrapolate.CLAMP
+          ),
+        },
+        {
+          translateX: interpolate(
+            pitchValue,
+            [-45, 45],
+            [-5, 5],
+            Extrapolate.CLAMP
+          ),
+        },
         {
           perspective: 300,
         },
@@ -121,8 +167,7 @@ const Card3D = () => {
         { rotateY: rotateYvalue },
       ],
     };
-  }, []);
-
+  });
   return (
     <View
       style={{
@@ -135,64 +180,20 @@ const Card3D = () => {
       <BackgroundGradient width={WIDTH} height={HEIGHT} />
 
       <GestureDetector gesture={gesture}>
-        <>
-          <Animated.View
-            style={[
-              {
-                alignSelf: "center",
-                height: CARD_HEIGHT,
-                width: CARD_WIDTH,
-                backgroundColor: "black",
-                position: "absolute",
-                borderRadius: 20,
-                zIndex: 300,
-              },
-              rStyle,
-            ]}
-          >
-            <View
-              style={{
-                position: "absolute",
-                bottom: "10%",
-                left: "10%",
-                flexDirection: "row",
-              }}
-            >
-              <View
-                style={{
-                  height: 50,
-                  aspectRatio: 1,
-                  borderRadius: 25,
-                  backgroundColor: "#272F46",
-                }}
-              />
-              <View
-                style={{
-                  flexDirection: "column",
-                  marginLeft: 10,
-                  justifyContent: "space-around",
-                }}
-              >
-                <View
-                  style={{
-                    height: 20,
-                    width: 80,
-                    borderRadius: 25,
-                    backgroundColor: "#272F46",
-                  }}
-                />
-                <View
-                  style={{
-                    height: 20,
-                    width: 80,
-                    borderRadius: 25,
-                    backgroundColor: "#272F46",
-                  }}
-                />
-              </View>
-            </View>
-          </Animated.View>
-        </>
+        <Card3DGlareView
+          width={CARD_WIDTH}
+          height={CARD_HEIGHT}
+          rotateStyle={rotate}
+          style={{
+            alignSelf: "center",
+
+            backgroundColor: "black",
+            position: "absolute",
+            borderRadius: 20,
+            zIndex: 300,
+          }}
+          // rStyle={rStyle}
+        />
       </GestureDetector>
     </View>
   );

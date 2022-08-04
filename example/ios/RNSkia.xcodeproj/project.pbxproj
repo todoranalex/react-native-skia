@@ -483,8 +483,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = B4S7VCCK9X;
+				DEVELOPMENT_TEAM = A27NJ7U2ZC;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = RNSkia/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -496,8 +498,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.shopify.reactnative.skia.example;
+				PRODUCT_BUNDLE_IDENTIFIER = atodoran.skia.example;
 				PRODUCT_NAME = RNSkia;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

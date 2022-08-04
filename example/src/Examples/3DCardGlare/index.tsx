@@ -1,25 +1,23 @@
 import {
   Canvas,
   RoundedRect,
-  useValue,
-  useSharedValueEffect,
-  Color,
   Shader,
   Skia,
   FractalNoise,
   Blend,
+  SweepGradient,
+  vec,
+  LinearGradient,
+  useImage,
 } from "@shopify/react-native-skia";
 import React from "react";
-import { Dimensions } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { useSharedValue } from "react-native-reanimated";
+import { View, ViewStyle, Image } from "react-native";
+import Animated from "react-native-reanimated";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const HEIGHT = 256;
-const WIDTH = SCREEN_WIDTH * 0.9;
+const HEIGHT = 180;
+const WIDTH = 278;
 
-const CARD_HEIGHT = HEIGHT - 5;
-const CARD_WIDTH = WIDTH - 5;
+const canvasPadding = 40;
 
 const duotoneSource = Skia.RuntimeEffect.Make(`
 uniform shader shaderInput;
@@ -51,76 +49,39 @@ half4 main(vec2 fragcoord) {
   return result;
 }`)!;
 
-const Gradient: React.FC<{
+// class BottleGreenColorScheme : BaseLightColorScheme("Bottle Green") {
+//   override val foregroundColor = Color(0, 0, 0)
+//   override val ultraLightColor = Color(145, 209, 131)
+//   override val extraLightColor = Color(115, 197, 99)
+//   override val lightColor = Color(63, 181, 59)
+//   override val midColor = Color(6, 139, 58)
+//   override val darkColor = Color(11, 75, 38)
+//   override val ultraDarkColor = Color(0, 14, 14)
+// }
+
+export const Card3DGlareView: React.FC<{
   width: number;
   height: number;
-}> = React.memo(({ width, height }) => {
-  const colors: readonly [Color, Color, Color, Color] = [
-    "cyan",
-    "magenta",
-    "yellow",
-    "cyan",
-  ];
-
-  const canvasPadding = 40;
-  const skValue = useValue<Color[]>([
-    "red",
-    "blue",
-    "green",
-    "gray",
-    "white",
-    "gray",
-  ]);
-  const rValue = useSharedValue<readonly [Color, Color, Color, Color]>(colors);
-  // useEffect(() => {
-  //   rValue.value = withRepeat(withTiming(10, { duration: 2000 }), -1, true);
-  // }, [rValue]);
-
-  useSharedValueEffect(() => {
-    // skValue.current = rValue.value;
-  }, rValue);
-
-  const rotateZ = useSharedValue(0);
-  const gesture = Gesture.Pan()
-
-    .onBegin((event) => {})
-    .onUpdate((event) => {
-      const generateColor = () => {
-        const randomColor = Math.floor(Math.random() * 16777215)
-          .toString(16)
-          .padStart(6, "0");
-        return `#${randomColor}`;
-      };
-
-      rValue.value = [
-        generateColor(),
-        generateColor(),
-        generateColor(),
-        generateColor(),
-      ];
-      // console.log(event.y);
-      // rotateZ.value = withTiming(
-      //   interpolate(event.y, [0, CARD_HEIGHT], [50, 50], Extrapolate.CLAMP)
-      // );
-    })
-    .onFinalize((event) => {});
-
+  style?: ViewStyle;
+  rStyle?: any;
+  rotateStyle?: any;
+}> = React.memo(({ width, height, style, rStyle, rotateStyle }) => {
   const FractalNoiseShader = () => (
-    <FractalNoise seed={0x0f} freqX={0.45} freqY={0.45} octaves={4} />
+    <FractalNoise freqX={0.45} freqY={0.45} octaves={4} />
   );
-
+  const white = Skia.Color("#4b4641");
+  const black = Skia.Color("#0f0a05");
   const MetalShader = () => (
     <Shader source={metalSource}>
       <FractalNoiseShader />
     </Shader>
   );
-
   const DuotoneShader = () => (
     <Shader
       source={duotoneSource}
       uniforms={{
-        colorLight: [0.0, 0.0, 0.0, 0.0],
-        colorDark: [1.0, 1.0, 1.0, 0.0],
+        colorLight: [...white],
+        colorDark: [...black],
         alpha: 1,
       }}
     >
@@ -129,13 +90,61 @@ const Gradient: React.FC<{
     </Shader>
   );
 
+  const LinearGradientView = () => {
+    return (
+      <LinearGradient
+        colors={["#FFFFFF", "rgba(255,255,255,0)"]}
+        start={vec(0, 0)}
+        end={vec(width, height)}
+      />
+    );
+  };
+
+  const SweepGradientView = () => {
+    const white = "rgb(255, 255, 255)";
+    const black = "rgb(187,188,188)";
+
+    // const positions = [0x0f,
+    //   1/12f, 2/12f, 3/12f,
+    //   4/12f, 5/12f, 6/12f,
+    //   7/12f, 8/12f, 9/12f,
+    //   10/12f, 11/12f, 1.0f]
+    const colors = [
+      white, // the first value is for 3 pm, the sweep starts here
+      black, // 4
+      white, // 5
+      white, // 6
+      white, // 7
+      black, // 8
+      white, // 9
+      black, // 10
+      white, // 11
+      white, // 12
+      white, // 1 constant color from 1pm to 2pm
+      black, // 2
+      white, // the last value also is at 3 pm, the sweep ends here
+    ];
+    return (
+      <SweepGradient
+        c={vec((width + canvasPadding) / 2, (height + canvasPadding) / 2)}
+        colors={colors}
+      />
+    );
+  };
+
   return (
-    <GestureDetector gesture={gesture}>
+    <Animated.View
+      style={[
+        {
+          ...style,
+          backgroundColor: "transparent",
+        },
+        rStyle,
+        rotateStyle,
+      ]}
+    >
       <Canvas
-        style={{
-          width: width + canvasPadding,
-          height: height + canvasPadding,
-        }}
+        style={{ width: width + canvasPadding, height: height + canvasPadding }}
       >
         <RoundedRect
           x={canvasPadding / 2}
@@ -144,18 +153,37 @@ const Gradient: React.FC<{
           height={height}
           r={20}
         >
-          <DuotoneShader />
+          <Blend mode={"overlay"}>
+            <LinearGradientView />
+            <DuotoneShader />
+          </Blend>
         </RoundedRect>
       </Canvas>
-    </GestureDetector>
+      <Image
+        source={{
+          uri: "https://blackrockconstruction.uk/wp-content/uploads/2019/04/Asset-1.png",
+        }}
+        resizeMode="contain"
+        style={{
+          top: height / 3.5,
+          position: "absolute",
+          height: height / 1.5,
+          width: width / 1.5,
+          // bottom: width / 2,
+          alignSelf: "center",
+        }}
+      />
+    </Animated.View>
   );
 });
 
 const Card3DGlare = () => {
   return (
-    <>
-      <Gradient height={HEIGHT} width={WIDTH} />
-    </>
+    <View
+      style={{ flex: 1, backgroundColor: "black", justifyContent: "center" }}
+    >
+      <Card3DGlareView height={HEIGHT} width={WIDTH} />
+    </View>
   );
 };
 
